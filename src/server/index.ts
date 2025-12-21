@@ -129,38 +129,9 @@ router.post("/internal/forms/edit-automod-submit", async (req, res) => {
     }
   }
   catch (err) {
-    const error = err as Error;
-    if (error.message.includes("RESTRICTED_PAGE")) {
-      try {
-        const wikiPage = await reddit.createWikiPage({
-          subredditName: context.subredditName,
-          page: 'config/automoderator',
-          content: automodConfig,
-          reason: editReason,
-        });
-        if (wikiPage) {
-          res.json({
-            showToast: "Automod created successfully."
-          });
-          return;
-        }
-        else {
-          res.json({
-            showToast: defaultErrorMessage
-          });
-        }
-      }
-      catch {
-        res.json({
-          showToast: defaultErrorMessage
-        });
-      }
-    }
-    else {
-      res.json({
-        showToast: defaultErrorMessage
-      });
-    }
+    res.json({
+      showToast: defaultErrorMessage
+    });
   }
 });
 app.use(router);
