@@ -20,11 +20,11 @@ That's it! Due to developer platform limitations, this app is not able to provid
 
 ## Changelog
 
-### [1.0.1] (2025-12-21)
+### [1.0.2] (2025-12-24)
 
 #### Features
 
-- Updated Devvit version to 0.12.6. No functional changes to the app.
+- Updated Devvit version to 0.12.7. No functional changes to the app.
 
 ### [1.0.0] Initial version (2025-12-20)
 
