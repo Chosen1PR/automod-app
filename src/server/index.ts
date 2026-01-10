@@ -3,7 +3,8 @@ import {
   createServer,
   context,
   getServerPort,
-  reddit
+  reddit,
+  settings
 } from "@devvit/web/server";
 
 const app = express();
@@ -85,7 +86,7 @@ router.post("/internal/menu/edit-automod", async (_req, res) => {
             label: 'Edit Reason',
             helpText: '200 character limit',
             required: true
-          },
+          }
         ],
       },
       acceptLabel: 'Submit',
@@ -99,15 +100,29 @@ router.post("/internal/menu/edit-automod", async (_req, res) => {
 
 // Form submission handler for Automod
 router.post("/internal/forms/edit-automod-submit", async (req, res) => {
-  const automodConfig = req.body.automodConfig as string ?? "";
+  // Get input values
+  var automodConfig = req.body.automodConfig as string ?? "";
   var editReason = req.body.editReason as string ?? "";
+  // Check length of edit reason
   if (editReason.length > 200) {
     res.json({
       showToast: "Error: Edit reason is too long."
     });
     return;
   }
+  // Append username to edit reason
   editReason += ` | Edited by u/${context.username!}`;
+  // Apply text replacements based on settings
+  const allSettings = await settings.getAll();
+  const replaceQuotesSetting = allSettings['replace-quotes'] as boolean ?? false;
+  const replaceEmDashSetting = allSettings['replace-em-dash'] as boolean ?? false;
+  if (replaceQuotesSetting) {
+    automodConfig = replaceSmartQuotes(automodConfig);
+  }
+  if (replaceEmDashSetting) {
+    automodConfig = replaceEmDashHyphen(automodConfig);
+  }
+  // Update the wiki page
   const defaultErrorMessage = "Error: Please check for mistakes in your config and try again.";
   try {
     const wikiPage = await reddit.updateWikiPage({
@@ -135,6 +150,16 @@ router.post("/internal/forms/edit-automod-submit", async (req, res) => {
   }
 });
 app.use(router);
+
+// Helpers for text replacements
+function replaceSmartQuotes(text: string): string {
+  return text
+    .replace(/‘|’/g, "'")
+    .replace(/“|”/g, '"');
+}
+function replaceEmDashHyphen(text: string): string {
+  return text.replace(/—-/g, '---');
+}
 
 const server = createServer(app);
 server.on("error", (err) => console.error(`server error: ${err.stack}`));

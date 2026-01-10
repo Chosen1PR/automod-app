@@ -16,6 +16,22 @@
     "dir": "dist/server",
     "entry": "index.cjs"
   },
+  "settings": {
+    "subreddit": {
+      "replace-quotes": {
+        "type": "boolean",
+        "label": "Replace smart quotes",
+        "helpText": "If enabled, smart quotes (‘’/“”) in the unban message will be replaced with standard quotes ('/\") to avoid formatting issues.",
+        "defaultValue": false
+      },
+      "replace-em-dash": {
+        "type": "boolean",
+        "label": "Replace em-dash-and-hyphen",
+        "helpText": "If enabled, a combination of em-dash followed immediately by a hyphen (—-) will be replaced with three hyphens (---) to avoid formatting issues.",
+        "defaultValue": false
+      }
+    }
+  },
   "menu": {
     "items": [
       {
@@ -30,6 +46,9 @@
   },
   "forms": {
     "editAutomodForm": "/internal/forms/edit-automod-submit"
+  },
+  "marketingAssets": {
+    "icon": "assets/ma-icon.png"
   },
   "dev": {
     "subreddit": "CapitalOneBank"

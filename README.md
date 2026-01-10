@@ -20,6 +20,14 @@ That's it! Due to developer platform limitations, this app is not able to provid
 
 ## Changelog
 
+### [1.0.3] (2026-01-09)
+
+#### Features
+
+- Added setting to replace smart quotes (‘’/“”) with standard quotes ('/") to avoid formatting errors.
+- Added setting to replace sequences of an em-dash followed by a hyphen (—-) with three hyphens (---) to avoid formating errors.
+- New app icon.
+
 ### [1.0.2] (2025-12-24)
 
 #### Features
