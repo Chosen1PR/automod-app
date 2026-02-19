@@ -21,13 +21,13 @@
       "replace-quotes": {
         "type": "boolean",
         "label": "Replace smart quotes",
-        "helpText": "If enabled, smart quotes (‘’/“”) in the unban message will be replaced with standard quotes ('/\") to avoid formatting issues.",
+        "helpText": "If enabled, smart quotes (‘’/“”) will be replaced with standard quotes ('/\") to avoid formatting errors on mobile.",
         "defaultValue": false
       },
       "replace-em-dash": {
         "type": "boolean",
         "label": "Replace em-dash-and-hyphen",
-        "helpText": "If enabled, a combination of em-dash followed immediately by a hyphen (—-) will be replaced with three hyphens (---) to avoid formatting issues.",
+        "helpText": "If enabled, a combination of em-dash followed immediately by a hyphen (—-) will be replaced with three hyphens (---) to avoid formatting errors on mobile.",
         "defaultValue": false
       }
     }

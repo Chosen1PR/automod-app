@@ -10,7 +10,7 @@ This app also respects mod permissions, so mods who are not explicitly allowed t
 2. Visit your subreddit using the Reddit mobile app.
 3. Tap the three dots (...) in the upper right hand corner of the screen.
 4. Select Automod.
-5. Make your changes.
+5. Tap the appropriate text field and make your changes.
 6. Provide a reason for editing. This reason must be under 200 characters long.
 7. Submit your changes.
 
@@ -19,6 +19,10 @@ That's it! Due to developer platform limitations, this app is not able to provid
 ---
 
 ## Changelog
+
+### [1.0.4] (2026-02-19)
+
+- Fixed a typo and updated the Devvit version to 0.12.13.
 
 ### [1.0.3] (2026-01-09)
 
