@@ -58,9 +58,9 @@ router.post("/internal/menu/edit-automod", async (_req, res) => {
   }
   // If we got here, we have the necessary permissions.
   // Get the current Automod config.
-  const wikiPage = await reddit.getWikiPage(context.subredditName, 'config/automoderator');
   let automodConfig = "";
   try {
+    const wikiPage = await reddit.getWikiPage(context.subredditName, 'config/automoderator');
     automodConfig = wikiPage.content ?? "";
   }
   catch (error) {

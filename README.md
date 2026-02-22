@@ -20,7 +20,7 @@ That's it! Due to developer platform limitations, this app is not able to provid
 
 ## Changelog
 
-### [1.0.4] (2026-02-19)
+### [1.0.5] (2026-02-19)
 
 - Fixed a typo and updated the Devvit version to 0.12.13.
 
