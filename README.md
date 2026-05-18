@@ -20,6 +20,14 @@ That's it! Due to developer platform limitations, this app is not able to provid
 
 ## Changelog
 
+### [1.0.6] (2026-05-18)
+
+#### Features
+
+- App icon now appears as app account's avatar.
+- Updated description on app profile page.
+- Updated Devvit CLI to 0.12.24.
+
 ### [1.0.5] (2026-02-19)
 
 - Fixed a typo and updated the Devvit version to 0.12.13.

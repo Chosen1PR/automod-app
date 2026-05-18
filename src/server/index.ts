@@ -111,7 +111,7 @@ router.post("/internal/forms/edit-automod-submit", async (req, res) => {
     return;
   }
   // Append username to edit reason
-  editReason += ` | Edited by u/${context.username!}`;
+  editReason += ` | Edited by ${context.username!}`;
   // Apply text replacements based on settings
   const allSettings = await settings.getAll();
   const replaceQuotesSetting = allSettings['replace-quotes'] as boolean ?? false;
