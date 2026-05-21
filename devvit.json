@@ -45,7 +45,8 @@
     ]
   },
   "forms": {
-    "editAutomodForm": "/internal/forms/edit-automod-submit"
+    "editAutomodForm": "/internal/forms/edit-automod-submit",
+    "syntaxErrorForm": "/internal/forms/syntax-error-submit"
   },
   "marketingAssets": {
     "icon": "assets/ma-icon.png"

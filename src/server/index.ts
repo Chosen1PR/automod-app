@@ -4,8 +4,19 @@ import {
   context,
   getServerPort,
   reddit,
+  redis,
   settings
 } from "@devvit/web/server";
+import {
+  loadAutomodConfigForm,
+  loadErrorForm,
+  reloadCachedAutomodConfig,
+  replaceEmDashHyphen,
+  replaceSmartQuotes,
+  isModAllowedToEditAutomod,
+  submitAutomodConfig,
+} from "./utils";
+//import { validateAutoModeratorSyntax } from "./syntax";
 
 const app = express();
 
@@ -21,38 +32,10 @@ const router = express.Router();
 // Menu item for editing automod
 router.post("/internal/menu/edit-automod", async (_req, res) => {
   // First, check if mod has permission to edit Automod.
-  const mod = (await reddit.getUserById(context.userId!))!;
-  let hasConfigPermission = false;
-  let hasWikiPermission = false;
-  let hasAllPermissions = false;
-  const permissions = await mod.getModPermissionsForSubreddit(context.subredditName);
-  const permissionErrorMessage = "You do not have permission to edit Automod.";
-  if (permissions) {
-    for (let i = 0; i < permissions.length; i++) {
-      if (permissions[i] == "all") {
-        hasAllPermissions = true;
-        break;
-      }
-      else if (permissions[i] == "config") {
-        hasConfigPermission = true;
-        if (hasWikiPermission) break;
-      }
-      else if (permissions[i] == "wiki") {
-        hasWikiPermission = true;
-        if (hasConfigPermission) break;
-      }
-    }
-    const hasIndividualPermissions = (hasConfigPermission && hasWikiPermission);
-    if (!(hasAllPermissions || hasIndividualPermissions)) {
-      res.json({
-        showToast: permissionErrorMessage
-      });
-      return;
-    }
-  }
-  else {
+  const isModAllowed = await isModAllowedToEditAutomod(context.userId!);
+  if (!isModAllowed) {
     res.json({
-      showToast: permissionErrorMessage
+      showToast: "You do not have permission to edit Automod."
     });
     return;
   }
@@ -66,36 +49,7 @@ router.post("/internal/menu/edit-automod", async (_req, res) => {
   catch (error) {
     automodConfig = "";
   }
-  res.json({
-    showForm: {
-      name: 'editAutomodForm',
-      form: {
-        title: 'Configure Automod',
-        fields: [
-          {
-            type: 'paragraph',
-            name: 'automodConfig',
-            label: 'Automod Config',
-            lineHeight: 15,
-            defaultValue: automodConfig,
-            required: true
-          },
-          {
-            type: 'string',
-            name: 'editReason',
-            label: 'Edit Reason',
-            helpText: '200 character limit',
-            required: true
-          }
-        ],
-      },
-      acceptLabel: 'Submit',
-      cancelLabel: 'Cancel',
-      data: {
-        automodConfig: automodConfig
-      }
-    }
-  });
+  loadAutomodConfigForm(automodConfig, res);
 });
 
 // Form submission handler for Automod
@@ -105,61 +59,36 @@ router.post("/internal/forms/edit-automod-submit", async (req, res) => {
   var editReason = req.body.editReason as string ?? "";
   // Check length of edit reason
   if (editReason.length > 200) {
-    res.json({
-      showToast: "Error: Edit reason is too long."
-    });
+    // Cache the current config so it can be reloaded later
+    await redis.hSet(context.username!, { cachedConfig: automodConfig, cachedEditReason: editReason });
+    loadErrorForm(["Edit reason cannot be longer than 200 characters."], res);
     return;
   }
-  // Append username to edit reason
-  editReason += ` | Edited by ${context.username!}`;
+  
+  
   // Apply text replacements based on settings
   const allSettings = await settings.getAll();
   const replaceQuotesSetting = allSettings['replace-quotes'] as boolean ?? false;
   const replaceEmDashSetting = allSettings['replace-em-dash'] as boolean ?? false;
-  if (replaceQuotesSetting) {
+  if (replaceQuotesSetting)
     automodConfig = replaceSmartQuotes(automodConfig);
-  }
-  if (replaceEmDashSetting) {
+  if (replaceEmDashSetting)
     automodConfig = replaceEmDashHyphen(automodConfig);
-  }
-  // Update the wiki page
-  const defaultErrorMessage = "Error: Please check for mistakes in your config and try again.";
-  try {
-    const wikiPage = await reddit.updateWikiPage({
-      subredditName: context.subredditName,
-      page: 'config/automoderator',
-      content: automodConfig,
-      reason: editReason,
-    });
-    if (wikiPage) {
-      res.json({
-        showToast: "Automod updated successfully."
-      });
-      return;
-    }
-    else {
-      res.json({
-        showToast: defaultErrorMessage
-      });
-    }
-  }
-  catch (err) {
-    res.json({
-      showToast: defaultErrorMessage
-    });
-  }
-});
-app.use(router);
 
-// Helpers for text replacements
-function replaceSmartQuotes(text: string): string {
-  return text
-    .replace(/‘|’/g, "'")
-    .replace(/“|”/g, '"');
-}
-function replaceEmDashHyphen(text: string): string {
-  return text.replace(/—-/g, '---');
-}
+  // This was the original location of the syntax validation.
+  // It was moved to AFTER submission attempts to allow for the config to be saved
+  // even if the validation in this app is outdated and throws false errors.
+
+  // Submit changes
+  await submitAutomodConfig(automodConfig, editReason, res);
+});
+
+// Form submission handler for Automod
+router.post("/internal/forms/syntax-error-submit", async (_req, res) => {
+  await reloadCachedAutomodConfig(res);
+});
+
+app.use(router);
 
 const server = createServer(app);
 server.on("error", (err) => console.error(`server error: ${err.stack}`));
