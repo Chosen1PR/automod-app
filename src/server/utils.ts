@@ -9,6 +9,7 @@ import { UserId } from "./types";
 
 import { validateAutoModeratorSyntax } from "./syntax";
 
+// Helper function to determine if a specific mod is allowed to configure Automod.
 export async function isModAllowedToEditAutomod(userId: UserId) {
   const mod = (await reddit.getUserById(userId))!;
   let hasConfigPermission = false;
@@ -38,6 +39,44 @@ export async function isModAllowedToEditAutomod(userId: UserId) {
   }
 }
 
+// Helper function to load the form to configure Automod.
+export function loadAutomodConfigForm(automodConfig: string, res: express.Response, editReason?: string) {
+  if (editReason == undefined)
+    editReason = "";
+  res.json({
+    showForm: {
+      name: 'editAutomodForm',
+      form: {
+        title: 'Configure Automod',
+        fields: [
+        {
+          type: 'paragraph',
+          name: 'automodConfig',
+          label: 'Automod Config',
+          lineHeight: 19,
+          defaultValue: automodConfig,
+          required: true
+        },
+        {
+          type: 'string',
+          name: 'editReason',
+          label: 'Edit Reason',
+          helpText: '200 character limit',
+          defaultValue: editReason,
+          required: true
+        }],
+      },
+      acceptLabel: 'Submit',
+      cancelLabel: 'Cancel',
+      data: {
+        automodConfig: automodConfig,
+        editReason: editReason
+      }
+    }
+  });
+}
+
+// Helper function to submit the Autmod config form and attempt to save changes.
 export async function submitAutomodConfig(automodConfig: string, editReason: string, res: express.Response) {
   // Append username to edit reason
   const fullEditReason = editReason + ` | Edited by ${context.username!}`;
@@ -83,40 +122,7 @@ export async function submitAutomodConfig(automodConfig: string, editReason: str
   }
 }
 
-export function loadAutomodConfigForm(automodConfig: string, res: express.Response) {
-  res.json({
-  showForm: {
-    name: 'editAutomodForm',
-    form: {
-      title: 'Configure Automod',
-      fields: [
-      {
-        type: 'paragraph',
-        name: 'automodConfig',
-        label: 'Automod Config',
-        lineHeight: 19,
-        defaultValue: automodConfig,
-        required: true
-      },
-      {
-        type: 'string',
-        name: 'editReason',
-        label: 'Edit Reason',
-        helpText: '200 character limit',
-        defaultValue: "",
-        required: true
-      }],
-    },
-    acceptLabel: 'Submit',
-    cancelLabel: 'Cancel',
-    data: {
-      automodConfig: automodConfig,
-      editReason: ""
-    }
-  }
- });
-}
-
+// Helper function to load the error form after an Automod config submission failure.
 export function loadErrorForm(errors: string[], res: express.Response) {
   var errorMsg = (errors[0] ?? "Unknown error.");
   errorMsg = replaceMultipleNewlines(errorMsg);
@@ -145,9 +151,9 @@ export function loadErrorForm(errors: string[], res: express.Response) {
   });
 }
 
+// Helper function to reopen the config form after an error.
 export async function reloadCachedAutomodConfig(res: express.Response) {
   try {
-    // Reopen the edit form.
     // Get the cached Automod config.
     let automodConfig = "";
     let editReason = "";
@@ -166,38 +172,7 @@ export async function reloadCachedAutomodConfig(res: express.Response) {
     catch (error) {
       automodConfig = "";
     }
-    res.json({
-      showForm: {
-        name: 'editAutomodForm',
-        form: {
-          title: 'Configure Automod',
-          fields: [
-            {
-              type: 'paragraph',
-              name: 'automodConfig',
-              label: 'Automod Config',
-              lineHeight: 19,
-              defaultValue: automodConfig,
-              required: true
-            },
-            {
-              type: 'string',
-              name: 'editReason',
-              label: 'Edit Reason',
-              helpText: '200 character limit',
-              defaultValue: editReason,
-              required: true
-            }
-          ],
-        },
-        acceptLabel: 'Submit',
-        cancelLabel: 'Cancel',
-        data: {
-          automodConfig: automodConfig,
-          editReason: editReason
-        }
-      }
-    });
+    loadAutomodConfigForm(automodConfig, res, editReason);
   }
   catch (err) {
     res.json({

@@ -64,8 +64,6 @@ router.post("/internal/forms/edit-automod-submit", async (req, res) => {
     loadErrorForm(["Edit reason cannot be longer than 200 characters."], res);
     return;
   }
-  
-  
   // Apply text replacements based on settings
   const allSettings = await settings.getAll();
   const replaceQuotesSetting = allSettings['replace-quotes'] as boolean ?? false;
