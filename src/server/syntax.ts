@@ -29,6 +29,13 @@ const VALID_ACTION_FIELDS = new Set([
   "set_locked",
   "set_post_crowd_control_level",
   "report_reason",
+  "comment",
+  "comment_locked",
+  "comment_stickied",
+  "modmail",
+  "modmail_subject",
+  "message",
+  "message_subject",
 ]);
 
 
@@ -216,33 +223,49 @@ function validateSearchValue(value: unknown, path: string, errors: string[]) {
 }
 
 // Validate threshold values such as numeric comparisons and optional time units.
-function validateThresholdValue(value: unknown, path: string, allowUnits = false, errors: string[]) {
-  if (isNumber(value)) return;
+function validateThresholdValue(value: unknown, path: string, allowUnits = false, allowNegative = false, errors: string[]) {
+  if (isNumber(value)) {
+    if (!allowNegative && value < 0) {
+      errors.push(`${path} must not be negative.`);
+    }
+    return;
+  }
   if (!isString(value)) {
     errors.push(`${path} must be a number or a comparison string.`);
     return;
   }
+
   const trimmed = value.trim();
-  if (/^[<>]\s*\d+(?:\.\d+)?(?:\s+[a-zA-Z]+)?$/.test(trimmed)) {
-    if (!allowUnits) return;
-    const unitMatch = trimmed.match(/^[<>]\s*\d+(?:\.\d+)?\s+([a-zA-Z]+)$/);
+  const unitPattern = /^[<>]?\s*[+-]?\d+(?:\.\d+)?\s+([a-zA-Z]+)$/;
+  const hasUnit = unitPattern.test(trimmed);
+  if (hasUnit && !allowUnits) {
+    errors.push(`${path} must not include a unit.`);
+    return;
+  }
+
+  const signPattern = allowNegative ? "[+-]?" : "";
+  const comparisonPattern = new RegExp(`^[<>]\\s*${signPattern}\\d+(?:\\.\\d+)?${allowUnits ? '(?:\\s+[a-zA-Z]+)?' : ''}$`);
+  const numberPattern = new RegExp(`^${signPattern}\\d+(?:\\.\\d+)?${allowUnits ? '(?:\\s+[a-zA-Z]+)?' : ''}$`);
+
+  if (!comparisonPattern.test(trimmed) && !numberPattern.test(trimmed)) {
+    errors.push(`${path} must be a number or comparison string like < 10${allowUnits ? ' or 10 minutes' : ''}${allowNegative ? '' : ', and cannot be negative'}.`);
+    return;
+  }
+
+  if (!allowNegative && /^\s*[<>]?\s*-/.test(trimmed)) {
+    errors.push(`${path} must not be negative.`);
+    return;
+  }
+
+  if (allowUnits && hasUnit) {
+    const unitMatch = trimmed.match(unitPattern);
     if (unitMatch && unitMatch[1]) {
       const unit = unitMatch[1].toLowerCase();
       if (!["minutes", "minute", "hours", "hour", "days", "day", "weeks", "week", "months", "month", "years", "year"].includes(unit)) {
         errors.push(`${path} has an invalid unit '${unit}'.`);
       }
     }
-    return;
   }
-  if (/^\d+(?:\.\d+)?(?:\s+[a-zA-Z]+)?$/.test(trimmed)) {
-    if (!allowUnits) return;
-    const unit = trimmed.split(/\s+/)[1];
-    if (unit && !["minutes", "minute", "hours", "hour", "days", "day", "weeks", "week", "months", "month", "years", "year"].includes(unit.toLowerCase())) {
-      errors.push(`${path} has an invalid unit '${unit}'.`);
-    }
-    return;
-  }
-  errors.push(`${path} must be a number or comparison string like '< 10'${allowUnits ? ", optionally followed by a unit" : ""}.`);
 }
 
 // Validate `set_flair` syntax, which supports a string, tuple list, or object form.
@@ -395,10 +418,10 @@ function validateRuleObject(rule: unknown, path: string, errors: string[], inSub
         case "comment_subreddit_karma":
         case "post_subreddit_karma":
         case "combined_subreddit_karma":
-          validateThresholdValue(value, `${path}.${key}`, false, errors);
+          validateThresholdValue(value, `${path}.${key}`, false, true, errors);
           break;
         case "account_age":
-          validateThresholdValue(value, `${path}.${key}`, true, errors);
+          validateThresholdValue(value, `${path}.${key}`, true, false, errors);
           break;
         case "contributor_quality":
           if (!isString(value)) {

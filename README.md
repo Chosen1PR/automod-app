@@ -22,9 +22,18 @@ That's it!
 
 ## Changelog
 
+### [1.1.1] (2026-05-25)
+
+#### Bug Fixes
+
+Fixed two issues relating to incorrectly displayed error messages by the syntax validator.
+
+- App now correctly recognizes negative karma values as valid.
+- App now correctly recognizes top-level action fields like `comment` and `message`.
+
 ### [1.1.0] (2026-05-24)
 
-##### Features
+#### Features
 
 This update is a doozy! It features a brand new **Syntax Checker** powered by a YAML parser, which identifies the exact line causing an error if the configuration fails to save.
 
