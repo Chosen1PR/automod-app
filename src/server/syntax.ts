@@ -90,6 +90,7 @@ const VALID_SEARCH_FIELDS = new Set([
   "media_title",
   "media_description",
   "name",
+  "author",
 ]);
 
 // Subgroup keys that can nest rule conditions under a specific entity.

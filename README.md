@@ -18,17 +18,25 @@ It also includes a built-in **Syntax Checker** powered by a YAML parser, which i
 
 That's it!
 
+*Note: **Very large** automod configs **may** break the app. This is a Devvit limitation; too much data sent over the app is rejected at the server level. It is quite rare for a subreddit to have a large enough config to break the app, but it **may** happen for Reddit's largest communities, or those that require a very large amount of automation.*
+
 ---
 
 ## Changelog
+
+### [1.1.4] (2026-05-26)
+
+#### Bug Fixes
+
+Fixed an issue where `author` was only recognized as a sub-group and not a top-level search field.
 
 ### [1.1.3] (2026-05-25)
 
 #### Bug Fixes
 
-Fixed three issues relating to incorrectly displayed error messages by the syntax validator. The app now correctly recognizes:
+Fixed three issues relating to incorrectly displayed error messages by the syntax checker. The app now correctly recognizes:
 
-- negative karma values as valid.
+- negative karma values.
 - top-level action fields like `comment` and `message`.
 - custom suffixes added to search fields.
 
