@@ -26,11 +26,11 @@ That's it!
 
 ## Changelog
 
-### [1.1.4] (2026-05-26)
+### [1.1.5] (2026-05-26)
 
 #### Bug Fixes
 
-Fixed an issue where `author` was only recognized as a sub-group and not a top-level search field.
+Fixed an issue where `author` was only recognized as a sub-group and not a search field.
 
 ### [1.1.3] (2026-05-25)
 
