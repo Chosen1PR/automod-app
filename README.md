@@ -20,6 +20,8 @@ That's it!
 
 *Note: **Very large** automod configs **may** break the app. This is a Devvit limitation; too much data sent over the app is rejected at the server level. It is quite rare for a subreddit to have a large enough config to break the app, but it **may** happen for Reddit's largest communities, or those that require a very large amount of automation.*
 
+*Also, in **some** cases, you **may** see an inaccurate error message. The validation logic in this app is based on the [official documentation for AutoModerator](https://www.reddit.com/r/reddit.com/wiki/automoderator/full-documentation/). Automod has some idiosyncrasies and quirks that are not well documented, so in some cases, the config may fail to save for a different reason than what the app says. If your YAML is 100% valid, the config **should** still save correctly.*
+
 ---
 
 ## Changelog
