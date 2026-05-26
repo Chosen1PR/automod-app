@@ -54,31 +54,36 @@ router.post("/internal/menu/edit-automod", async (_req, res) => {
 
 // Form submission handler for Automod
 router.post("/internal/forms/edit-automod-submit", async (req, res) => {
-  // Get input values
-  var automodConfig = req.body.automodConfig as string ?? "";
-  var editReason = req.body.editReason as string ?? "";
-  // Check length of edit reason
-  if (editReason.length > 200) {
-    // Cache the current config so it can be reloaded later
-    await redis.hSet(context.username!, { cachedConfig: automodConfig, cachedEditReason: editReason });
-    loadErrorForm(["Edit reason cannot be longer than 200 characters."], res);
-    return;
+  try {
+    // Get input values
+    var automodConfig = req.body.automodConfig as string ?? "";
+    var editReason = req.body.editReason as string ?? "";
+    // Check length of edit reason
+    if (editReason.length > 200) {
+      // Cache the current config so it can be reloaded later
+      await redis.hSet(context.username!, { cachedConfig: automodConfig, cachedEditReason: editReason });
+      loadErrorForm(["Edit reason cannot be longer than 200 characters."], res);
+      return;
+    }
+    // Apply text replacements based on settings
+    const allSettings = await settings.getAll();
+    const replaceQuotesSetting = allSettings['replace-quotes'] as boolean ?? false;
+    const replaceEmDashSetting = allSettings['replace-em-dash'] as boolean ?? false;
+    if (replaceQuotesSetting)
+      automodConfig = replaceSmartQuotes(automodConfig);
+    if (replaceEmDashSetting)
+      automodConfig = replaceEmDashHyphen(automodConfig);
+
+    // This was the original location of the syntax validation.
+    // It was moved to AFTER submission attempts to allow for the config to be saved
+    // even if the validation in this app is outdated and throws false errors.
+
+    // Submit changes
+    await submitAutomodConfig(automodConfig, editReason, res);
   }
-  // Apply text replacements based on settings
-  const allSettings = await settings.getAll();
-  const replaceQuotesSetting = allSettings['replace-quotes'] as boolean ?? false;
-  const replaceEmDashSetting = allSettings['replace-em-dash'] as boolean ?? false;
-  if (replaceQuotesSetting)
-    automodConfig = replaceSmartQuotes(automodConfig);
-  if (replaceEmDashSetting)
-    automodConfig = replaceEmDashHyphen(automodConfig);
-
-  // This was the original location of the syntax validation.
-  // It was moved to AFTER submission attempts to allow for the config to be saved
-  // even if the validation in this app is outdated and throws false errors.
-
-  // Submit changes
-  await submitAutomodConfig(automodConfig, editReason, res);
+  catch (error) {
+    // Filler
+  }
 });
 
 // Form submission handler for Automod

@@ -187,17 +187,18 @@ function formatYamlError(error: YAMLParseError): string {
   return error.message;
 }
 
-// Parse a search key string and split it into field names and modifier tokens.
-// Example valid keys: "title", "body (regex)", "url+domain (case-sensitive, regex)".
+// Parse a search key string and split it into field names, optional suffixes, and modifier tokens.
+// Example valid keys: "title", "body (regex)", "url+domain (case-sensitive, regex)", "title+body#whitelist (regex)".
 function parseSearchKey(key: string) {
-  const match = key.trim().match(/^~?([A-Za-z0-9_]+(?:\+[A-Za-z0-9_]+)*)(?:\s*\(([^)]+)\))?$/);
+  const match = key.trim().match(/^~?([A-Za-z0-9_]+(?:\+[A-Za-z0-9_]+)*)(?:#([A-Za-z0-9_]+))?(?:\s*\(([^)]+)\))?$/);
   if (!match) return null;
-  const [_, fieldGroup, modifierGroup] = match;
+  const [_, fieldGroup, suffix, modifierGroup] = match;
   if (!fieldGroup) return null;
   const fields = fieldGroup.split("+");
   const rawModifiers = modifierGroup ? modifierGroup.split(",").map((s) => s.trim()).filter(Boolean) : [];
   return {
     fields,
+    suffix,
     modifiers: rawModifiers,
   };
 }
